@@ -1,7 +1,11 @@
-import { add } from './core/add.js';
-import { defineConfig } from './core/config.js';
-import { find } from './core/find.js';
-import { load } from './core/load.js';
-import { remove } from './core/remove.js';
-
-export { add, defineConfig, find, load, remove };
+export { cache } from './core/cache.js';
+export { clear } from './core/clear.js';
+export { deleteAsync as delete } from './core/delete.js';
+export { entries } from './core/entries.js';
+export { forEach } from './core/forEach.js';
+export { get } from './core/get.js';
+export { has } from './core/has.js';
+export { keys } from './core/keys.js';
+export { set } from './core/set.js';
+export { size } from './core/size.js';
+export { values } from './core/values.js';

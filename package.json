@@ -1,10 +1,30 @@
 {
   "name": "cachio",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A lightweight JSON-based caching utility with CLI and API support for Node.js",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./config": {
+      "types": "./dist/core/config.d.ts",
+      "import": "./dist/core/config.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/index.d.ts"
+      ],
+      "config": [
+        "./dist/core/config.d.ts"
+      ]
+    }
+  },
   "bin": {
     "cachio": "./dist/cli.js"
   },

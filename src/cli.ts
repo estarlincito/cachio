@@ -1,7 +1,8 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
 
-import { add, find, load, remove } from './index.js';
+import * as cachio from './index.js';
 import { version } from './utils/pkg.js';
 
 const args = process.argv.slice(2);
@@ -11,13 +12,26 @@ const printHelp = () => {
 Usage: cachio <command> [options]
 
 Commands:
-  --add <key>=<value>    Add a key-value pair to the cache
-  --remove <key>         Remove a key from the cache
-  --find <key>           Find a value by key
-  --load                 Load and display the entire cache
-  --reset                Clear the entire cache
-  --help                 Show this help message
-  --version              Show version
+  --set <key>=<value>      Add or update a key-value pair in the cache
+  --get <key>              Retrieve a value by key
+  --delete <key>           Remove a key from the cache
+  --has <key>              Check if a key exists in the cache
+  --cache                  Display the entire cache
+  --clear                  Clear the entire cache
+  --keys                   List all keys in the cache
+  --values                 List all values in the cache
+  --entries                List all key-value pairs in the cache
+  --size                   Display the number of items in the cache
+  --forEach                Iterate over the cache and print key-value pairs
+  --help                   Show this help message
+  --version                Show version
+
+Examples:
+  cachio --set name=John
+  cachio --get name
+  cachio --delete name
+  cachio --has name
+  cachio --cache
 `);
 };
 
@@ -34,38 +48,70 @@ const parseKeyValue = (arg: string): [string, string | number | boolean] => {
 const run = async () => {
   try {
     switch (args[0]) {
-      case '--add': {
+      case '--set': {
         if (!args[1]) throw new TypeError('Missing key=value argument');
         const [key, value] = parseKeyValue(args[1]);
-        const result = await add({ [key]: value });
-        console.log('Added:', result);
+        await cachio.set(key, value);
+        console.log('Set:', { [key]: value });
         break;
       }
-      case '--remove': {
+      case '--get': {
         if (!args[1]) throw new TypeError('Missing key argument');
-        const result = await remove(args[1]);
-        console.log('Removed:', result);
+        const result = cachio.get(args[1]);
+        console.log('Value:', result ?? 'Not found');
         break;
       }
-      case '--find': {
+      case '--delete': {
         if (!args[1]) throw new TypeError('Missing key argument');
-        const result = await find(args[1]);
-        console.log('Found:', result ?? 'Not found');
+        const result = await cachio.delete(args[1]);
+        console.log('Deleted:', result ? 'Success' : 'Key not found');
         break;
       }
-      case '--load': {
-        const result = await load();
-        console.log('Cache:', result ?? 'Empty');
+      case '--has': {
+        if (!args[1]) throw new TypeError('Missing key argument');
+        const result = cachio.has(args[1]);
+        console.log('Exists:', result);
         break;
       }
-      case '--reset': {
-        const filePath = await import('./utils/path.js').then((m) =>
-          m.getFilePath(),
+      case '--cache': {
+        const cacheObj = Object.fromEntries(cachio.cache);
+        console.log('Cache:', cacheObj);
+        break;
+      }
+      case '--clear': {
+        await cachio.clear();
+        console.log('Cache cleared');
+        break;
+      }
+      case '--keys': {
+        const keys = [...cachio.keys()];
+        console.log('Keys:', keys.length ? keys : 'No keys found');
+        break;
+      }
+      case '--values': {
+        const values = [...cachio.values()];
+        console.log('Values:', values.length ? values : 'No values found');
+        break;
+      }
+      case '--entries': {
+        const entries = [...cachio.entries()];
+        console.log(
+          'Entries:',
+          entries.length ? Object.fromEntries(entries) : 'No entries found',
         );
-        await import('node:fs/promises').then((fs) =>
-          fs.writeFile(filePath, '{}'),
-        );
-        console.log('Cache reset');
+        break;
+      }
+      case '--size': {
+        const size = cachio.size();
+        console.log('Size:', size);
+        break;
+      }
+      case '--forEach': {
+        let output = 'Cache contents:\n';
+        cachio.forEach((value, key) => {
+          output += `  ${key}: ${value}\n`;
+        });
+        console.log(output.trim() || 'Cache is empty');
         break;
       }
       case '--help': {
@@ -77,10 +123,10 @@ const run = async () => {
         break;
       }
       default:
-        throw new TypeError('Unknown command');
+        throw new TypeError(`Unknown command: ${args[0] || 'none'}`);
     }
-  } catch (error) {
-    console.error('Error:', (error as Error).message);
+  } catch (error: any) {
+    console.error('Error:', error.message);
     printHelp();
     process.exit(1);
   }
