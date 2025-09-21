@@ -1,7 +1,7 @@
 {
   "name": "cachio",
   "type": "module",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A lightweight JSON-based caching utility with CLI and API support for Node.js",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
